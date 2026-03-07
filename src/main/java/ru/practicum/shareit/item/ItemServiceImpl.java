@@ -15,6 +15,7 @@ import ru.practicum.shareit.user.UserRepository;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -88,39 +89,72 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional(readOnly = true)
     public List<ItemDto> getUserItems(Long userId) {
-        userRepository.findById(userId)
+        // 1. Проверяем пользователя
+        User user = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь с id " + userId + " не найден"));
 
         LocalDateTime now = LocalDateTime.now();
 
-        return itemRepository.findAllByOwner_IdOrderByIdAsc(userId).stream()
+        // 2. Загружаем товары владельца
+        List<Item> items = itemRepository.findAllByOwner_IdOrderByIdAsc(userId);
+
+        if (items.isEmpty()) {
+            return List.of();
+        }
+
+        // 3. Собираем ID всех товаров
+        List<Long> itemIds = items.stream()
+                .map(Item::getId)
+                .collect(Collectors.toList());
+
+        // 4. Загружаем ВСЕ комментарии для этих товаров (ОДНИМ запросом)
+        List<Comment> allComments = commentRepository.findAllByItemIdIn(itemIds);
+
+        // Группируем комментарии по itemId, используя сам объект Comment
+        Map<Long, List<CommentDto>> commentsByItemId = allComments.stream()
+                .collect(Collectors.groupingBy(
+                        comment -> comment.getItem().getId(),  // Получаем itemId из связи
+                        Collectors.mapping(CommentMapper::toDto, Collectors.toList())
+                ));
+
+        // 5. Загружаем ВСЕ прошлые бронирования
+        List<Booking> lastBookings = bookingRepository.findLastBookingsForItems(itemIds, now);
+        Map<Long, Booking> lastBookingByItemId = lastBookings.stream()
+                .collect(Collectors.toMap(
+                        booking -> booking.getItem().getId(),  // Получаем itemId из связи
+                        booking -> booking,
+                        (existing, replacement) -> existing
+                ));
+
+        // 6. Загружаем ВСЕ будущие бронирования
+        List<Booking> nextBookings = bookingRepository.findNextBookingsForItems(itemIds, now);
+        Map<Long, Booking> nextBookingByItemId = nextBookings.stream()
+                .collect(Collectors.toMap(
+                        booking -> booking.getItem().getId(),
+                        booking -> booking,
+                        (existing, replacement) -> existing
+                ));
+
+        // 7. Формируем результат
+        return items.stream()
                 .map(item -> {
                     ItemDto itemDto = ItemMapper.toItemDto(item);
 
-                    // Добавляем комментарии
-                    List<CommentDto> comments = commentRepository.findAllByItemId(item.getId()).stream()
-                            .map(CommentMapper::toDto)
-                            .collect(Collectors.toList());
-                    itemDto.setComments(comments);
+                    // Добавляем комментарии из заранее подготовленной мапы
+                    itemDto.setComments(commentsByItemId.getOrDefault(item.getId(), List.of()));
 
-                    // Добавляем lastBooking и nextBooking для владельца
+                    // Добавляем бронирования для владельца
                     if (item.getOwner().getId().equals(userId)) {
-                        // Находим последнее прошедшее бронирование
-                        List<Booking> pastBookings = bookingRepository
-                                .findAllByItemIdAndEndBeforeOrderByEndDesc(item.getId(), now);
-                        if (!pastBookings.isEmpty()) {
-                            Booking lastBooking = pastBookings.get(0);
+                        Booking lastBooking = lastBookingByItemId.get(item.getId());
+                        if (lastBooking != null) {
                             ItemDto.BookingInfoDto lastBookingDto = new ItemDto.BookingInfoDto();
                             lastBookingDto.setId(lastBooking.getId());
                             lastBookingDto.setBookerId(lastBooking.getBooker().getId());
                             itemDto.setLastBooking(lastBookingDto);
                         }
 
-                        // Находим следующее будущее бронирование
-                        List<Booking> futureBookings = bookingRepository
-                                .findAllByItemIdAndStartAfterOrderByStartAsc(item.getId(), now);
-                        if (!futureBookings.isEmpty()) {
-                            Booking nextBooking = futureBookings.get(0);
+                        Booking nextBooking = nextBookingByItemId.get(item.getId());
+                        if (nextBooking != null) {
                             ItemDto.BookingInfoDto nextBookingDto = new ItemDto.BookingInfoDto();
                             nextBookingDto.setId(nextBooking.getId());
                             nextBookingDto.setBookerId(nextBooking.getBooker().getId());
