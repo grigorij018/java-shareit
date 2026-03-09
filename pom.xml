@@ -20,6 +20,12 @@
 	</properties>
 
 	<dependencies>
+		<!--Spring Data Jpa-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-data-jpa</artifactId>
+		</dependency>
+
 		<!-- Spring Boot Starters -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -62,14 +68,6 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-configuration-processor</artifactId>
 			<optional>true</optional>
-		</dependency>
-
-		<!-- ДОБАВЛЕННЫЕ ЗАВИСИМОСТИ -->
-
-		<!-- JPA для работы с базами данных (понадобится во 2 части) -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
 		</dependency>
 
 		<!-- Для работы с JSON -->

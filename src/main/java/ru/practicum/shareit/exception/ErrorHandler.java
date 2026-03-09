@@ -1,5 +1,6 @@
 package ru.practicum.shareit.exception;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -9,14 +10,14 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 @RestControllerAdvice
 public class ErrorHandler {
 
-    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class})
+    @ExceptionHandler({UserNotFoundException.class, ItemNotFoundException.class, BookingNotFoundException.class})
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNotFoundException(RuntimeException e) {
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    @ResponseStatus(HttpStatus.CONFLICT)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleIllegalArgumentException(IllegalArgumentException e) {
         return new ErrorResponse(e.getMessage());
     }
@@ -27,9 +28,26 @@ public class ErrorHandler {
         return new ErrorResponse("Ошибка валидации: " + e.getBindingResult().getAllErrors().get(0).getDefaultMessage());
     }
 
+    // Добавляем обработку для конфликтов уникальности email
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)  // 409 Conflict
+    public ErrorResponse handleDataIntegrityViolationException(DataIntegrityViolationException e) {
+        // Проверяем, связано ли исключение с уникальностью email
+        if (e.getMessage() != null && e.getMessage().contains("users_unique_email_idx")) {
+            return new ErrorResponse("Пользователь с таким email уже существует");
+        }
+        return new ErrorResponse("Ошибка целостности данных: " + e.getMessage());
+    }
+
     @ExceptionHandler(Throwable.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(Throwable e) {
         return new ErrorResponse("Произошла непредвиденная ошибка: " + e.getMessage());
+    }
+
+    @ExceptionHandler(ConflictException.class)
+    @ResponseStatus(HttpStatus.CONFLICT)
+    public ErrorResponse handleConflictException(ConflictException e) {
+        return new ErrorResponse(e.getMessage());
     }
 }
