@@ -166,5 +166,8 @@
 		<profile>
 			<id>check</id>
 		</profile>
+		<profile>
+			<id>coverage</id>
+		</profile>
 	</profiles>
 </project>
