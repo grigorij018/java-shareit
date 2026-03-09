@@ -62,6 +62,7 @@
             <groupId>ru.practicum</groupId>
             <artifactId>server</artifactId>
             <version>0.0.1-SNAPSHOT</version>
+            <classifier>plain</classifier>
             <scope>compile</scope>
         </dependency>
     </dependencies>
@@ -73,13 +74,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
                     <mainClass>ru.practicum.shareit.ShareItGateway</mainClass>
-                    <classifier>exec</classifier>
-                    <excludes>
-                        <exclude>
-                            <groupId>org.projectlombok</groupId>
-                            <artifactId>lombok</artifactId>
-                        </exclude>
-                    </excludes>
                 </configuration>
                 <executions>
                     <execution>
