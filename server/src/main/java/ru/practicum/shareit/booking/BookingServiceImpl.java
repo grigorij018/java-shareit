@@ -73,7 +73,7 @@ public class BookingServiceImpl implements BookingService {
     public BookingDto approve(Long ownerId, Long bookingId, boolean approved) {
         // Проверяем существование бронирования
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BookingNotFoundException("Бронирование с id " + bookingId + " не найдено"));
+                .orElseThrow(() -> new BookingNotFoundException("Бронирование не найдено"));
 
         // Проверяем, что пользователь является владельцем вещи
         if (!booking.getItem().getOwner().getId().equals(ownerId)) {
@@ -96,7 +96,7 @@ public class BookingServiceImpl implements BookingService {
     @Transactional(readOnly = true)
     public BookingDto getById(Long userId, Long bookingId) {
         Booking booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new BookingNotFoundException("Бронирование с id " + bookingId + " не найдено"));
+                .orElseThrow(() -> new BookingNotFoundException("Бронирование не найдено"));
 
         // Проверяем права доступа (автор бронирования или владелец вещи)
         boolean isBooker = booking.getBooker().getId().equals(userId);

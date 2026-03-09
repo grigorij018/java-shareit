@@ -29,7 +29,7 @@ public class BookingController {
     @PatchMapping("/{bookingId}")
     public BookingDto approve(@RequestHeader(USER_ID_HEADER) Long userId,
                               @PathVariable("bookingId") Long bookingId,
-                              @RequestParam boolean approved) {
+                              @RequestParam("approved") boolean approved) {
         return bookingService.approve(userId, bookingId, approved);
     }
 
@@ -41,17 +41,17 @@ public class BookingController {
 
     @GetMapping
     public List<BookingDto> getUserBookings(@RequestHeader(USER_ID_HEADER) Long userId,
-                                            @RequestParam(defaultValue = "ALL") String state,
-                                            @RequestParam(defaultValue = "0") Integer from,
-                                            @RequestParam(defaultValue = "10") Integer size) {
+                                            @RequestParam(value = "state", defaultValue = "ALL") String state,
+                                            @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                            @RequestParam(value = "size", defaultValue = "10") Integer size) {
         return bookingService.getUserBookings(userId, parseState(state), from, size);
     }
 
     @GetMapping("/owner")
     public List<BookingDto> getOwnerBookings(@RequestHeader(USER_ID_HEADER) Long userId,
-                                             @RequestParam(defaultValue = "ALL") String state,
-                                             @RequestParam(defaultValue = "0") Integer from,
-                                             @RequestParam(defaultValue = "10") Integer size) {
+                                             @RequestParam(value = "state", defaultValue = "ALL") String state,
+                                             @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                             @RequestParam(value = "size", defaultValue = "10") Integer size) {
         return bookingService.getOwnerBookings(userId, parseState(state), from, size);
     }
 

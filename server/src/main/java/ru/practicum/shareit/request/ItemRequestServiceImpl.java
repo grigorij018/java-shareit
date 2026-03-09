@@ -31,7 +31,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     @Override
     public ItemRequestDto create(Long userId, ItemRequestCreateDto dto) {
         User requestor = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("Пользователь с id " + userId + " не найден"));
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
 
         ItemRequest request = ItemRequestMapper.toEntity(dto, requestor);
         ItemRequest savedRequest = requestRepository.save(request);
@@ -44,7 +44,7 @@ public class ItemRequestServiceImpl implements ItemRequestService {
     public List<ItemRequestDto> getUserRequests(Long userId) {
         // Проверяем существование пользователя
         userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("Пользователь с id " + userId + " не найден"));
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
 
         List<ItemRequest> requests = requestRepository.findAllByRequestorIdOrderByCreatedDesc(userId);
 

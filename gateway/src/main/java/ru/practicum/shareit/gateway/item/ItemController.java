@@ -25,14 +25,14 @@ public class ItemController {
 
     @PatchMapping("/{itemId}")
     public ResponseEntity<Object> updateItem(@RequestHeader(USER_ID_HEADER) Long userId,
-                                             @PathVariable Long itemId,
+                                             @PathVariable("itemId") Long itemId,
                                              @RequestBody ItemDto itemDto) {
         return itemClient.updateItem(userId, itemId, itemDto);
     }
 
     @GetMapping("/{itemId}")
-    public ResponseEntity<Object> getItemById(@PathVariable Long itemId,
-                                              @RequestHeader(value = USER_ID_HEADER, required = false) Long userId) {
+    public ResponseEntity<Object> getItemById(@RequestHeader(value = USER_ID_HEADER, required = false) Long userId,
+                                              @PathVariable("itemId") Long itemId) {
         return itemClient.getItemById(itemId, userId);
     }
 
@@ -42,13 +42,13 @@ public class ItemController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<Object> searchItems(@RequestParam String text) {
+    public ResponseEntity<Object> searchItems(@RequestParam("text") String text){
         return itemClient.searchItems(text);
     }
 
     @PostMapping("/{itemId}/comment")
     public ResponseEntity<Object> addComment(@RequestHeader(USER_ID_HEADER) Long userId,
-                                             @PathVariable Long itemId,
+                                             @PathVariable("itemId") Long itemId,
                                              @Valid @RequestBody CommentCreateDto commentDto) {
         return itemClient.addComment(userId, itemId, commentDto);
     }

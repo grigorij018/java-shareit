@@ -29,14 +29,14 @@ public class RequestController {
 
     @GetMapping("/all")
     public ResponseEntity<Object> getAllRequests(@RequestHeader(USER_ID_HEADER) Long userId,
-                                                 @RequestParam(defaultValue = "0") Integer from,
-                                                 @RequestParam(defaultValue = "10") Integer size) {
+                                                 @RequestParam(value = "from", defaultValue = "0") Integer from,
+                                                 @RequestParam(value = "size", defaultValue = "10") Integer size) {
         return requestClient.getAllRequests(userId, from, size);
     }
 
     @GetMapping("/{requestId}")
     public ResponseEntity<Object> getRequestById(@RequestHeader(USER_ID_HEADER) Long userId,
-                                                 @PathVariable Long requestId) {
+                                                 @PathVariable("requestId") Long requestId) {
         return requestClient.getRequestById(userId, requestId);
     }
 }
