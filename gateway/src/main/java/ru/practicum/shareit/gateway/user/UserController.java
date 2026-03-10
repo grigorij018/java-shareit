@@ -1,0 +1,43 @@
+package ru.practicum.shareit.gateway.user;
+
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.dto.UserDto;
+import jakarta.validation.Valid;
+
+@RestController
+@RequestMapping(path = "/users")
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserClient userClient;
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ResponseEntity<Object> createUser(@Valid @RequestBody UserDto userDto) {
+        return userClient.createUser(userDto);
+    }
+
+    @PatchMapping("/{userId}")
+    public ResponseEntity<Object> updateUser(@PathVariable("userId") Long userId, @RequestBody UserDto userDto) {
+        return userClient.updateUser(userId, userDto);
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<Object> getUserById(@PathVariable("userId") Long userId) {
+        return userClient.getUserById(userId);
+    }
+
+    @GetMapping
+    public ResponseEntity<Object> getAllUsers() {
+        return userClient.getAllUsers();
+    }
+
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public ResponseEntity<Object> deleteUser(@PathVariable("userId") Long userId) {
+        return userClient.deleteUser(userId);
+    }
+}
