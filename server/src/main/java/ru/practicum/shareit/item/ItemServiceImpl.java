@@ -228,11 +228,10 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new ItemNotFoundException("Вещь с id " + itemId + " не найдена"));
 
         // Проверяем, что пользователь действительно брал вещь в аренду и аренда завершена
-        List<Booking> completedBookings = bookingRepository
-                .findAllByItemIdAndBookerIdAndEndBeforeAndStatus(
-                        itemId, userId, LocalDateTime.now(), BookingStatus.APPROVED);
+        boolean hasCompletedBooking = bookingRepository
+                .existsByItemIdAndBookerIdAndEndBefore(itemId, userId, LocalDateTime.now());
 
-        if (completedBookings.isEmpty()) {
+        if (!hasCompletedBooking) {
             throw new IllegalArgumentException("Вы можете оставить комментарий только после завершенной аренды");
         }
 

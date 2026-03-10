@@ -53,7 +53,9 @@ public class BookingServiceImpl implements BookingService {
             throw new IllegalArgumentException("Дата окончания бронирования должна быть позже даты начала");
         }
 
-        if (dto.getStart().isBefore(LocalDateTime.now())) {
+        LocalDateTime now = LocalDateTime.now();
+
+        if (dto.getStart().isBefore(now.minusSeconds(1))) {
             throw new IllegalArgumentException("Дата начала бронирования не может быть в прошлом");
         }
 

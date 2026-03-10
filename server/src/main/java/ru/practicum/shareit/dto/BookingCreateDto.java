@@ -12,7 +12,7 @@ public class BookingCreateDto {
     private Long itemId;
 
     @NotNull(message = "Дата начала бронирования должна быть указана")
-    @FutureOrPresent(message = "Дата начала не может быть в прошлом")
+    //@FutureOrPresent(message = "Дата начала не может быть в прошлом")
     private LocalDateTime start;
 
     @NotNull(message = "Дата окончания бронирования должна быть указана")
