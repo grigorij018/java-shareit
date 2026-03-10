@@ -1,9 +1,11 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.Booking;
+import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.exception.ItemRequestNotFoundException;
 import ru.practicum.shareit.booking.model.BookingStatus;
@@ -19,8 +21,10 @@ import ru.practicum.shareit.user.UserRepository;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -98,12 +102,15 @@ public class ItemServiceImpl implements ItemService {
             bookingRepository.findAllByItemIdAndEndBeforeOrderByEndDesc(id, now).stream()
                     .filter(booking -> booking.getStatus() == BookingStatus.APPROVED)
                     .findFirst()
-                    .ifPresent(booking -> {
-                        ItemDto.BookingInfoDto lastBookingDto = new ItemDto.BookingInfoDto();
-                        lastBookingDto.setId(booking.getId());
-                        lastBookingDto.setBookerId(booking.getBooker().getId());
-                        itemDto.setLastBooking(lastBookingDto);
-                    });
+                    .ifPresentOrElse(
+                            booking -> {
+                                ItemDto.BookingInfoDto lastBookingDto = new ItemDto.BookingInfoDto();
+                                lastBookingDto.setId(booking.getId());
+                                lastBookingDto.setBookerId(booking.getBooker().getId());
+                                itemDto.setLastBooking(lastBookingDto);
+                            },
+                            () -> log.debug("Для itemId={} не найдено завершённых APPROVED-бронирований на момент {}", id, now)
+                    );
 
             bookingRepository.findAllByItemIdAndStartAfterOrderByStartAsc(id, now).stream()
                     .filter(booking -> booking.getStatus() == BookingStatus.APPROVED)
@@ -123,8 +130,9 @@ public class ItemServiceImpl implements ItemService {
     @Transactional(readOnly = true)
     public List<ItemDto> getUserItems(Long userId) {
         // 1. Проверяем пользователя
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserNotFoundException("Пользователь с id " + userId + " не найден"));
+        if (!userRepository.existsById(userId)) {
+            throw new UserNotFoundException("Пользователь с id " + userId + " не найден");
+        }
 
         LocalDateTime now = LocalDateTime.now();
 

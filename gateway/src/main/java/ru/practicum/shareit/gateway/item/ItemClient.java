@@ -7,6 +7,7 @@ import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 import ru.practicum.shareit.gateway.client.BaseClient;
 import ru.practicum.shareit.item.dto.CommentCreateDto;
@@ -50,7 +51,7 @@ public class ItemClient extends BaseClient {
         return get("/search?text={text}", null, parameters);
     }
 
-    public ResponseEntity<Object> addComment(Long userId, Long itemId, ru.practicum.shareit.item.dto.@Valid CommentCreateDto commentDto) {
+    public ResponseEntity<Object> addComment(Long userId, Long itemId, @Valid @RequestBody CommentCreateDto commentDto) {
         return post("/" + itemId + "/comment", userId, commentDto);
     }
 }
